@@ -192,7 +192,7 @@ install_caddy() {
   extracted="$(find "$tmpdir" -type f -name caddy -print -quit)"
   [[ -n "$extracted" ]] || die "Downloaded archive does not contain the Caddy binary."
   install -m 0755 "$extracted" "$CADDY_BIN"
-  "$CADDY_BIN" list-modules | grep -qx 'http.handlers.forward_proxy' ||
+  "$CADDY_BIN" list-modules | grep -Fx 'http.handlers.forward_proxy' >/dev/null ||
     die "Downloaded Caddy binary is missing the Naive forward_proxy module."
   ok "Installed Naive-enabled Caddy: $("$CADDY_BIN" version)"
   trap - RETURN
