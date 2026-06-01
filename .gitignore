@@ -1,2 +1,6 @@
 clients/desktop/node_modules/
 clients/desktop/dist/
+clients/android/.gradle/
+clients/android/local.properties
+clients/android/app/build/
+clients/android/build/

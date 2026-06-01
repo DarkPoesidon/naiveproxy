@@ -2,9 +2,10 @@
 
 Cross-platform NaiveProxy desktop GUI for Windows and macOS.
 
-The first release is a Windows portable app. The shared interface and macOS
-system-proxy adapter are already present, but macOS packaging is not ready for
-users yet.
+The first packaged release is a Windows portable app. The shared interface,
+official Intel and Apple Silicon engine extraction, and macOS system-proxy
+adapter are included. A distributable macOS build still needs to be produced
+and signed on a Mac.
 
 ## Beginner Workflow
 
@@ -43,8 +44,15 @@ The generated portable executable is written to:
 dist/Naive-Breeze-0.1.0-Windows-Portable.exe
 ```
 
-## macOS Status
+## macOS Build
 
-The shared interface and system-proxy abstraction are included. A signed macOS
-package still needs the macOS engine extraction path and Apple signing workflow
-before release.
+Run this command on macOS:
+
+```bash
+npm run package:mac
+```
+
+The app downloads the matching official Intel or Apple Silicon engine archive
+on first connection and restores the previous macOS web-proxy settings after a
+normal disconnect. Apple signing and notarization are still required before
+publishing the DMG to end users.

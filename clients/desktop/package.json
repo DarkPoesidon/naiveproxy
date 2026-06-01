@@ -41,6 +41,7 @@
       "artifactName": "Naive-Breeze-${version}-Windows-Portable.${ext}"
     },
     "mac": {
+      "icon": "assets/icon.png",
       "category": "public.app-category.utilities",
       "artifactName": "Naive-Breeze-${version}-macOS-${arch}.${ext}"
     }

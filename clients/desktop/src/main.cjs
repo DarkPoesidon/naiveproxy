@@ -17,6 +17,7 @@ let mainWindow;
 let engineProcess;
 let systemProxyEnabled = false;
 let previousWindowsProxy;
+let previousMacProxy;
 let runtimeLog = [];
 
 const userData = () => app.getPath("userData");
@@ -157,9 +158,6 @@ async function downloadFile(url, outputPath, onProgress) {
 async function ensureEngine(force = false) {
   const current = await getEngineStatus();
   if (current.installed && !force) return current;
-  if (process.platform !== "win32") {
-    throw new Error("macOS packaging support is scaffolded. Engine extraction is added with the signed macOS build.");
-  }
   addLog("Checking the latest official NaiveProxy engine release.");
   emit("engine:progress", { active: true, percent: 3, label: "Checking official release" });
   const response = await fetch(RELEASE_API, { headers: { "User-Agent": "Naive-Breeze" } });
@@ -175,7 +173,11 @@ async function ensureEngine(force = false) {
     emit("engine:progress", { active: true, percent: Math.max(8, percent), label: "Downloading secure engine" });
   });
   emit("engine:progress", { active: true, percent: 96, label: "Preparing engine" });
-  await extract(archivePath, { dir: engineDir() });
+  if (process.platform === "win32") {
+    await extract(archivePath, { dir: engineDir() });
+  } else {
+    await execFileAsync("tar", ["-xJf", archivePath, "-C", engineDir()]);
+  }
   const extracted = await findFile(engineDir(), process.platform === "win32" ? "naive.exe" : "naive");
   if (!extracted) throw new Error("Downloaded archive did not contain the NaiveProxy engine.");
   if (extracted !== engineExecutablePath()) await fs.copyFile(extracted, engineExecutablePath());
@@ -260,18 +262,44 @@ async function configureSystemProxy(enable) {
   } else if (process.platform === "darwin") {
     const { stdout } = await execFileAsync("networksetup", ["-listallnetworkservices"]);
     const services = stdout.split(/\r?\n/).filter((line) => line && !line.startsWith("*"));
+    if (enable && !systemProxyEnabled) {
+      previousMacProxy = new Map();
+      for (const service of services) {
+        previousMacProxy.set(service, {
+          web: await readMacProxy(service, false),
+          secure: await readMacProxy(service, true)
+        });
+      }
+    }
     for (const service of services) {
       if (enable) {
         await execFileAsync("networksetup", ["-setwebproxy", service, "127.0.0.1", String(LOCAL_HTTP_PORT)]);
         await execFileAsync("networksetup", ["-setsecurewebproxy", service, "127.0.0.1", String(LOCAL_HTTP_PORT)]);
       } else {
-        await execFileAsync("networksetup", ["-setwebproxystate", service, "off"]);
-        await execFileAsync("networksetup", ["-setsecurewebproxystate", service, "off"]);
+        await restoreMacProxy(service, false, previousMacProxy?.get(service)?.web);
+        await restoreMacProxy(service, true, previousMacProxy?.get(service)?.secure);
       }
     }
+    if (!enable) previousMacProxy = undefined;
   }
   systemProxyEnabled = enable;
   addLog(enable ? "Desktop system proxy enabled." : "Desktop system proxy disabled.");
+}
+
+async function readMacProxy(service, secure) {
+  const command = secure ? "-getsecurewebproxy" : "-getwebproxy";
+  const { stdout } = await execFileAsync("networksetup", [command, service]);
+  const values = Object.fromEntries(stdout.split(/\r?\n/).map((line) => line.split(/:\s*/, 2)).filter((parts) => parts.length === 2));
+  return { enabled: values.Enabled === "Yes", server: values.Server || "", port: values.Port || "0" };
+}
+
+async function restoreMacProxy(service, secure, previous) {
+  const stateCommand = secure ? "-setsecurewebproxystate" : "-setwebproxystate";
+  const proxyCommand = secure ? "-setsecurewebproxy" : "-setwebproxy";
+  if (previous?.server && previous.port !== "0") {
+    await execFileAsync("networksetup", [proxyCommand, service, previous.server, previous.port]);
+  }
+  await execFileAsync("networksetup", [stateCommand, service, previous?.enabled ? "on" : "off"]);
 }
 
 async function readWindowsRegistryValue(key, name) {

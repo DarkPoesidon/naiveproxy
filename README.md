@@ -88,6 +88,16 @@ without asking the user to edit configuration files.
 Development and packaging commands are documented in
 [`clients/desktop/README.md`](clients/desktop/README.md).
 
+## Naive Breeze Android Setup
+
+`clients/android` contains a guided Android setup companion. It converts the
+server link into a local profile and opens it in the maintained official
+sing-box for Android VPN client. The Android app explains each step for users
+who have never configured a VPN before.
+
+Build instructions and the exact beginner workflow are documented in
+[`clients/android/README.md`](clients/android/README.md).
+
 ## Optional WARP Outbound
 
 Cloudflare WARP outbound is available as an experimental menu option. It may
