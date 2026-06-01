@@ -1,0 +1,48 @@
+{
+  "name": "naive-breeze",
+  "version": "0.1.0",
+  "description": "Simple NaiveProxy desktop client for Windows and macOS",
+  "main": "src/main.cjs",
+  "author": "DarkPoesidon",
+  "license": "BSD-3-Clause",
+  "scripts": {
+    "start": "electron .",
+    "check": "node scripts/check.cjs",
+    "package:win": "electron-builder --win portable",
+    "package:mac": "electron-builder --mac dmg"
+  },
+  "dependencies": {
+    "extract-zip": "^2.0.1"
+  },
+  "devDependencies": {
+    "electron": "^39.1.2",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.darkpoesidon.naivebreeze",
+    "productName": "Naive Breeze",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json",
+      "node_modules/extract-zip/**/*",
+      "node_modules/@electron/**/*",
+      "node_modules/debug/**/*",
+      "node_modules/get-stream/**/*",
+      "node_modules/yauzl/**/*",
+      "node_modules/fd-slicer/**/*",
+      "node_modules/pend/**/*"
+    ],
+    "win": {
+      "icon": "assets/icon.png",
+      "artifactName": "Naive-Breeze-${version}-Windows-Portable.${ext}"
+    },
+    "mac": {
+      "category": "public.app-category.utilities",
+      "artifactName": "Naive-Breeze-${version}-macOS-${arch}.${ext}"
+    }
+  }
+}

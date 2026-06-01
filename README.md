@@ -78,6 +78,16 @@ sudo naive-server validate
 The menu can rotate credentials, change the decoy website, change outbound
 routing, test the server, show logs, update Caddy, and uninstall the service.
 
+## Naive Breeze Desktop Client
+
+`clients/desktop` contains the guided GUI client for Windows. It imports the
+`naive+https://...` link printed by the server installer, downloads the official
+NaiveProxy engine on first connection, and can enable the Windows system proxy
+without asking the user to edit configuration files.
+
+Development and packaging commands are documented in
+[`clients/desktop/README.md`](clients/desktop/README.md).
+
 ## Optional WARP Outbound
 
 Cloudflare WARP outbound is available as an experimental menu option. It may
