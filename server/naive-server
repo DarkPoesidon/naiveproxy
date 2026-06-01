@@ -61,7 +61,7 @@ load_config() {
 }
 
 save_config() {
-  install -d -m 0700 "$CONFIG_DIR"
+  install -d -o root -g caddy -m 0750 "$CONFIG_DIR"
   umask 077
   {
     printf 'DOMAIN=%q\n' "$DOMAIN"
@@ -291,7 +291,7 @@ render_caddyfile() {
     *) die "Unknown decoy mode: $DECOY_MODE" ;;
   esac
 
-  install -d -m 0700 "$CONFIG_DIR"
+  install -d -o root -g caddy -m 0750 "$CONFIG_DIR"
   cat >"$CADDYFILE" <<EOF
 {
   log {
@@ -596,7 +596,11 @@ install_flow() {
   save_config
   render_caddyfile
   validate_caddyfile
-  systemctl enable --now "$SERVICE_NAME"
+  if ! systemctl enable --now "$SERVICE_NAME"; then
+    warn "The service did not start. Recent logs:"
+    journalctl -u "$SERVICE_NAME" -n 30 --no-pager || true
+    die "Service startup failed. Review the logs above, then run: sudo naive-server status"
+  fi
   say
   ok "Installation completed."
   validate_all || true
